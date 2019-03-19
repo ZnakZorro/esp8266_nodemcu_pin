@@ -1,13 +1,32 @@
 print("---start wifi---")
 zegar = tmr.time()
 wifi.setmode(wifi.STATION)
-wifi.sta.config({ ssid = "ssid", pwd = "password" })
+--wifi.sta.config({ ssid = "", pwd = "" })
+--wifi.ap.config({ssid="ESP8266-"..node.chipid(), auth=wifi.OPEN})
 wifi.sta.connect()
 wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(T)
 	--print("\n\tSTA - GOT IP".."\n\tStation IP: "..T.IP.."\n\tSubnet mask: "..T.netmask.."\n\tGateway IP: "..T.gateway)
 	print("Station IP: "..T.IP,"Time WiFi [s]=",tmr.time()-zegar)
+   loadM("M_PLAYONE","j23.u8")
 	print(node.heap())
 end)
+wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function()
+   loadM("M_PLAYONE","milicja.u8")
+   wifi.ap.config({ssid="ESP8266-"..node.chipid(), auth=wifi.OPEN})
+   --tmr.alarm(0,2000,0,function()      node.restart();   end);
+      enduser_setup.manual(true)
+      enduser_setup.start(
+        function()
+          print("Connected to wifi as:" .. wifi.sta.getip())
+        end,
+        function(err, str)
+          print("enduser_setup: Err #" .. err .. ": " .. str)
+        end
+      );   
+   
+end)
+
+
 
 
 pinOUT=4
@@ -17,8 +36,8 @@ srv = net.createServer(net.TCP)
 srv:listen(80, function(conn)
   conn:on("receive", function(client, request)
   --print(request)
-	local script="<script>function $(y){return document.getElementById(y)};function akcja(r){\nconsole.log(r);\n$('i').innerHTML=r.h;\nif(r.s==1)document.body.classList.add('j'); else document.body.classList.remove('j');}\nfunction fajax(n){fetch('/?a=x&pin='+n).then(function(t){return t.json()}).then(function(j){akcja(j);}).catch(function(e){print('ERROR')})}</script>";
-	local style = "\n<style>body,select,button{margin:5vw;font:normal 18px verdana;}button {width:34vw;max-width:10em; padding:0.5em 0.2em;} button:active,button:focus{color:red;} body{background:#555; color:#eee;}.j{background:#111;}</style>"
+	local script="<script>\nfunction $(y){return document.getElementById(y)};\nfunction akcja(r){\nconsole.log(r);\n$('i').innerHTML=r.h;\nif(r.s==1)document.body.className='j'; else document.body.className='';}\nfunction fajax(n){document.body.className='r';fetch('/?a=x&pin='+n).then(function(t){return t.json()}).then(function(j){akcja(j);}).catch(function(e){print('ERROR')})}\n</script>\n";
+	local style = "\n<style>#c{text-align:center;} body,select,button{margin:5vw;font:normal 18px verdana;}button {width:34vw;max-width:10em; padding:0.5em 0.2em;} button:active,button:focus{color:red;} body{background:#000; color:#888;}.j{background:#fff;}.r{background:#f00;}</style>"
 	local body  = "\n<button id='b1' onClick='fajax(\"ON\")'>On 1</button><button id='b2' onClick='fajax(\"OFF\")'>Off 1</button>"
 	local _icon  = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAgMAAAC+UIlYAAAACVBMVEUAAAAAAAAAAACDY+nAAAAAAnRSTlMAgJsrThgAAADpSURBVFjD7dHBCQMxDERR70VFpJrUo2pURC5SlcEszkCEfwPruRn9wwOPv13vwbMYvNdn8Dz5flUxwqqCCVWM8KpkQjHCZhBMYITPIJHACLuDIAIj/A4SCIywFQQQEOErSCAQwhQEEADhChIIQgBBiEYQAghCNAIgRBACCEI0ghBAEAIIQjSCEEgQQgRGWA+iERDhPUggCAEEIUQAhAgNIQIgRGgIEQAhQkeIwAjbBSECI3wXpAiIsH0QIhDC90GKAAijIBaBEE5BLgIgjIOYBESIQN+xu87bCZ4brPcJTnCCE5zgfp/99gV7t1BMVMeE7wAAAABJRU5ErkJggg=="
 	local icon  = "\n<link rel='icon' type='image/png' size='128x128' href='".._icon.."'>"
@@ -34,17 +53,21 @@ srv:listen(80, function(conn)
       end
     end
 	--for n,v in pairs(_GET) do print (n,v);end
-    buf = buf .. "<!doctype html><html><head><meta charset='utf-8'><title>myOnOff</title><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='mobile-web-app-capable' content='yes'>\n"..icon..style.."\n"..script.."</head><body><h3>myOnOff - esp8266</h3>"..body.."</body></html>"
+    buf = buf .. "<!doctype html><html><head><meta charset='utf-8'><title>myOnOff</title><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='mobile-web-app-capable' content='yes'>\n"..icon..style.."\n"..script.."</head><body><div id='c'><h3>myOnOff - esp8266</h3>"..body.."</div></body></html>"
 
 	local s=0
     if (_GET.pin == "ON") then
 		--dofile("aplayONE.lua")
       --_on = " selected=true"
       gpio.write(pinOUT, gpio.HIGH)
+      --dofile("aplayONE.lua")
+      loadM("M_PLAYONE","slowik1.u8")
 	  s=1
     elseif (_GET.pin == "OFF") then
       --_off = " selected=\"true\""
       gpio.write(pinOUT, gpio.LOW)
+      --dofile("aplayTWO.lua")
+      loadM("M_PLAYONE","jump_8k.u8")
     end
     buf = buf .. "<br><div id='i'>"..node.heap().."</div>\n</body></html>"
 	if (_GET.a == "x") then buf='{"h":"'..node.heap()..'","s":"'..s..'","p":"'..pinOUT..'"}' end
