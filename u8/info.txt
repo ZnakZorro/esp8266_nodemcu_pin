@@ -1,0 +1,1 @@
+u8 - music file ussigned 8bits raw
