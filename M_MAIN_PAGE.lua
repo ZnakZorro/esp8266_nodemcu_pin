@@ -40,6 +40,18 @@ wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function()
 	);
 end)
 
+function alarm(sek)
+	if not tmr.create():alarm(sek*60000, tmr.ALARM_SINGLE, function()
+	  loadM("M_PLAYONE","z_roza.u8")
+	end)
+	then
+	  loadM("M_PLAYONE","milicja.u8")
+	end
+end
+
+is_int = function(n)
+	n=tonumber(n); if (type(n)=="number") then return n; else return nil; end
+end
 
 pinOUT=4
 lastHEAP = node.heap();
@@ -51,6 +63,7 @@ srv:listen(80, function(conn)
 	local script="<script>\nfunction $(y){return document.getElementById(y)};\nfunction akcja(r){\nconsole.log(r);\n$('i').innerHTML=r.h;\nif(r.s==1)document.body.className='j'; else document.body.className='';}\nfunction fajax(n){document.body.className='r';var t=parseInt(((new Date()).getTime())/1000);fetch('/?a=x&pin='+n+'&t='+t).then(function(t){return t.json()}).then(function(j){akcja(j);}).catch(function(e){print('ERROR')})}\n</script>\n";
 	local style = "\n<style>#c{text-align:center;} body,select,button{margin:5vw;font:normal 18px verdana;}button {width:34vw;max-width:10em; padding:0.5em 0.2em;} button:active,button:focus{color:red;} body{background:#000; color:#888;}.j{background:#fff;}.r{background:#f00;}</style>"
 	local body  = "\n<button id='b1' onClick='fajax(\"ON\")'>On 1</button><button id='b2' onClick='fajax(\"OFF\")'>Off 1</button>"
+	local keys  = "\n<br><button id='k1' onClick='fajax(\"1\")'>1 min</button><button id='k5' onClick='fajax(\"5\")'>5 min</button><br><button id='k15' onClick='fajax(\"15\")'>15min</button><button id='k60' onClick='fajax(\"60\")'>1 godz</button>"
 	local _icon  = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAgMAAAC+UIlYAAAACVBMVEUAAAAAAAAAAACDY+nAAAAAAnRSTlMAgJsrThgAAADpSURBVFjD7dHBCQMxDERR70VFpJrUo2pURC5SlcEszkCEfwPruRn9wwOPv13vwbMYvNdn8Dz5flUxwqqCCVWM8KpkQjHCZhBMYITPIJHACLuDIAIj/A4SCIywFQQQEOErSCAQwhQEEADhChIIQgBBiEYQAghCNAIgRBACCEI0ghBAEAIIQjSCEEgQQgRGWA+iERDhPUggCAEEIUQAhAgNIQIgRGgIEQAhQkeIwAjbBSECI3wXpAiIsH0QIhDC90GKAAijIBaBEE5BLgIgjIOYBESIQN+xu87bCZ4brPcJTnCCE5zgfp/99gV7t1BMVMeE7wAAAABJRU5ErkJggg=="
 	local icon  = "\n<link rel='icon' type='image/png' size='128x128' href='".._icon.."'>"
 	local buf = ""
@@ -65,16 +78,22 @@ srv:listen(80, function(conn)
 		end
 	end
 	--for n,v in pairs(_GET) do print (n,v);end
-	buf = buf .. "<!doctype html><html><head><meta charset='utf-8'><title>myOnOff</title><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='mobile-web-app-capable' content='yes'>\n"..icon..style.."\n"..script.."</head><body><div id='c'><h3>myOnOff - esp8266</h3>"..body.."</div></body></html>"
-
+	buf = buf .. "<!doctype html><html><head><meta charset='utf-8'><title>myOnOff</title><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='mobile-web-app-capable' content='yes'>\n"..icon..style.."\n"..script.."</head><body><div id='c'><h3>myOnOff - esp8266</h3>"..body..keys.."</div></body></html>"
+	print('pin=',_GET.pin)
+	local t=is_int(_GET.pin)
+	if (t) then alarm(t) end
+	
 	local s=0
+	
 	if (_GET.pin == "ON") then
 		gpio.write(pinOUT, gpio.HIGH)
 		loadM("M_PLAYONE","slowik1.u8")
+		--alarm(15*60)
 		s=1
 	elseif (_GET.pin == "OFF") then
 		gpio.write(pinOUT, gpio.LOW)
 		loadM("M_PLAYONE","jump_8k.u8")
+		--alarm(60*60)
 	end
 	buf = buf .. "<br><div id='i'>"..node.heap().."</div>\n</body></html>"
 	if (_GET.a == "x") then buf='{"h":"'..node.heap()..', '..lastHEAP..'","s":"'..s..'","p":"'..pinOUT..'"}' end
@@ -93,6 +112,7 @@ srv:listen(80, function(conn)
 	script=nil
 	style=nil
 	body=nil
+	keys=nil
 	collectgarbage()
 	lastHEAP = node.heap();
 	end)
