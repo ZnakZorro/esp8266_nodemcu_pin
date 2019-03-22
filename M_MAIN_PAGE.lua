@@ -1,3 +1,9 @@
+local moduleName = ... 
+local M = {}
+_G[moduleName] = M
+--module
+
+function M.Start()
 print("\n---start wifi---")
 dofile("credentials.lua")
 zegar = tmr.time()
@@ -42,7 +48,7 @@ srv = net.createServer(net.TCP)
 srv:listen(80, function(conn)
 	conn:on("receive", function(client, request)
 	--print(request)
-	local script="<script>\nfunction $(y){return document.getElementById(y)};\nfunction akcja(r){\nconsole.log(r);\n$('i').innerHTML=r.h;\nif(r.s==1)document.body.className='j'; else document.body.className='';}\nfunction fajax(n){document.body.className='r';fetch('/?a=x&pin='+n).then(function(t){return t.json()}).then(function(j){akcja(j);}).catch(function(e){print('ERROR')})}\n</script>\n";
+	local script="<script>\nfunction $(y){return document.getElementById(y)};\nfunction akcja(r){\nconsole.log(r);\n$('i').innerHTML=r.h;\nif(r.s==1)document.body.className='j'; else document.body.className='';}\nfunction fajax(n){document.body.className='r';var t=parseInt(((new Date()).getTime())/1000);fetch('/?a=x&pin='+n+'&t='+t).then(function(t){return t.json()}).then(function(j){akcja(j);}).catch(function(e){print('ERROR')})}\n</script>\n";
 	local style = "\n<style>#c{text-align:center;} body,select,button{margin:5vw;font:normal 18px verdana;}button {width:34vw;max-width:10em; padding:0.5em 0.2em;} button:active,button:focus{color:red;} body{background:#000; color:#888;}.j{background:#fff;}.r{background:#f00;}</style>"
 	local body  = "\n<button id='b1' onClick='fajax(\"ON\")'>On 1</button><button id='b2' onClick='fajax(\"OFF\")'>Off 1</button>"
 	local _icon  = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAgMAAAC+UIlYAAAACVBMVEUAAAAAAAAAAACDY+nAAAAAAnRSTlMAgJsrThgAAADpSURBVFjD7dHBCQMxDERR70VFpJrUo2pURC5SlcEszkCEfwPruRn9wwOPv13vwbMYvNdn8Dz5flUxwqqCCVWM8KpkQjHCZhBMYITPIJHACLuDIAIj/A4SCIywFQQQEOErSCAQwhQEEADhChIIQgBBiEYQAghCNAIgRBACCEI0ghBAEAIIQjSCEEgQQgRGWA+iERDhPUggCAEEIUQAhAgNIQIgRGgIEQAhQkeIwAjbBSECI3wXpAiIsH0QIhDC90GKAAijIBaBEE5BLgIgjIOYBESIQN+xu87bCZ4brPcJTnCCE5zgfp/99gV7t1BMVMeE7wAAAABJRU5ErkJggg=="
@@ -72,6 +78,15 @@ srv:listen(80, function(conn)
 	end
 	buf = buf .. "<br><div id='i'>"..node.heap().."</div>\n</body></html>"
 	if (_GET.a == "x") then buf='{"h":"'..node.heap()..', '..lastHEAP..'","s":"'..s..'","p":"'..pinOUT..'"}' end
+		if (_GET.t) then
+			-- czas w sekundach
+			local czas =_GET.t / 60 
+			-- czas w minutach
+			print('czas=',czas)
+			local minuta  = czas % 60
+			local godzina = (czas/60) % 24
+			print('Czas=',czas,'h='.godzina,'m='.minuta,'tmr=',tmr.time(),'D=',czas-tmr.time())
+		end
 	client:send(buf)
 	buf=nil
 	icon=nil
@@ -87,4 +102,6 @@ srv:listen(80, function(conn)
 	end)
 end)
 
-	
+--module
+end
+return M

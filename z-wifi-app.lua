@@ -1,39 +1,3 @@
-print("\n---start wifi---")
-dofile("credentials.lua")
-zegar = tmr.time()
-wifi.setmode(wifi.STATION)
-
-wifi.sta.config({ ssid = SSID, pwd = PASSWORD })
-wifi.sta.connect()
-wifi.eventmon.register(wifi.eventmon.STA_CONNECTED, function(T)
-	print("Connection to AP("..T.SSID..") established!")
-	loadM("M_PLAYONE","citac.u8")
-	PASSWORD=nil
-	SSID=nil
-	cr=nil
-	crnr=nil
-	collectgarbage()
-end)
-wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(T)
-	print("Station IP: "..T.IP,"Time WiFi [s]=",tmr.time()-zegar)
-	zegar=nil
-	loadM("M_PLAYONE","j23.u8")
-	print(node.heap())
-end)
-wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function()
-	loadM("M_PLAYONE","ludzie.u8")
-	wifi.ap.config({ssid="ESP8266-"..node.chipid(), auth=wifi.OPEN})	
-	enduser_setup.manual(true)
-	enduser_setup.start(
-		function()
-			print("Connected to wifi as:" .. wifi.sta.getip())
-			end,
-			function(err, str)
-			print("enduser_setup: Err #" .. err .. ": " .. str)
-		end
-	);
-end)
-
 
 pinOUT=4
 lastHEAP = node.heap();
@@ -63,11 +27,16 @@ srv:listen(80, function(conn)
 
 	local s=0
 	if (_GET.pin == "ON") then
+		--dofile("aplayONE.lua")
+		--_on = " selected=true"
 		gpio.write(pinOUT, gpio.HIGH)
+		--dofile("aplayONE.lua")
 		loadM("M_PLAYONE","slowik1.u8")
 		s=1
 	elseif (_GET.pin == "OFF") then
+		--_off = " selected=\"true\""
 		gpio.write(pinOUT, gpio.LOW)
+		--dofile("aplayTWO.lua")
 		loadM("M_PLAYONE","jump_8k.u8")
 	end
 	buf = buf .. "<br><div id='i'>"..node.heap().."</div>\n</body></html>"
