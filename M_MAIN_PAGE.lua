@@ -26,23 +26,38 @@ wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(T)
 	loadM("M_PLAYONE","j23.u8")
 	print(node.heap())
 end)
+wificount=1
 wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function()
-	loadM("M_PLAYONE","ludzie.u8")
-	wifi.ap.config({ssid="ESP8266-"..node.chipid(), auth=wifi.OPEN})	
-	enduser_setup.manual(true)
-	enduser_setup.start(
-		function()
-			print("Connected to wifi as:" .. wifi.sta.getip())
-			end,
-			function(err, str)
-			print("enduser_setup: Err #" .. err .. ": " .. str)
-		end
-	);
+	print('wifi try:',wificount)
+	wificount=wificount+1
+	loadM("M_PLAYONE","kuku.u8")
+			if(wificount>10) then
+				wificount=1
+				crnr=crnr+1
+				if (crnr>#cr) then crnr=1; end
+				SSID=cr[crnr][1]
+				PASSWORD=cr[crnr][2]
+				print('x',crnr,SSID)
+				wifi.sta.config({ ssid = SSID, pwd = PASSWORD })
+				wifi.sta.connect()
+			end
+	--wifi.ap.config({ssid="ESP8266-"..node.chipid(), auth=wifi.OPEN})	
+	--enduser_setup.manual(true)
+	--enduser_setup.start(
+		--function()
+			--print("Connected to wifi as:" .. wifi.sta.getip())
+			--end,
+			--function(err, str)
+			--print("enduser_setup: Err #" .. err .. ": " .. str)
+		--end
+	--);
 end)
 
-function alarm(sek)
-	if not tmr.create():alarm(sek*60000, tmr.ALARM_SINGLE, function()
-	  loadM("M_PLAYONE","z_roza.u8")
+function alarm(minut)
+	if not tmr.create():alarm(minut*60000, tmr.ALARM_SINGLE, function()
+		local u8 = minut.."min.u8"
+		print(u8)
+	  loadM("M_PLAYONE",u8)
 	end)
 	then
 	  loadM("M_PLAYONE","milicja.u8")
@@ -80,8 +95,8 @@ srv:listen(80, function(conn)
 	--for n,v in pairs(_GET) do print (n,v);end
 	buf = buf .. "<!doctype html><html><head><meta charset='utf-8'><title>myOnOff</title><meta name='viewport' content='width=device-width,initial-scale=1'><meta name='mobile-web-app-capable' content='yes'>\n"..icon..style.."\n"..script.."</head><body><div id='c'><h3>myOnOff - esp8266</h3>"..body..keys.."</div></body></html>"
 	print('pin=',_GET.pin)
-	local t=is_int(_GET.pin)
-	if (t) then alarm(t) end
+	local tim=is_int(_GET.pin)
+	if (tim) then alarm(tim) end
 	
 	local s=0
 	
