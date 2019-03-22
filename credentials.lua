@@ -1,4 +1,4 @@
-crnr=2
+crnr=1
 cr ={
 {"ssid","pwd"},
 {"ssid2","pwd2"}
