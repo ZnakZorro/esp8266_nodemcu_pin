@@ -82,10 +82,9 @@ srv:listen(80, function(conn)
 			-- czas w sekundach
 			local czas =_GET.t / 60 
 			-- czas w minutach
-			print('czas=',czas)
 			local minuta  = czas % 60
 			local godzina = (czas/60) % 24
-			print('Czas=',czas,'h='.godzina,'m='.minuta,'tmr=',tmr.time(),'D=',czas-tmr.time())
+			print('Czas='..czas,'h='..godzina,'m='..minuta,'tmr='..tmr.time(),'D='..czas-tmr.time())
 		end
 	client:send(buf)
 	buf=nil
