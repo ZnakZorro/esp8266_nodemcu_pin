@@ -1,0 +1,9 @@
+nodemcu-tool upload --port=COM3 --optimize helloworld.lua
+
+nodemcu-uploader --port COM3 file list
+
+nodemcu-uploader --port COM3 node heap
+
+./nodemcu-tool devices
+
+nodemcu-tool run helloworld.lua
