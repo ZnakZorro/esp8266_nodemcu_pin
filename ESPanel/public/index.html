@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ESPanel</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no,initial-scale=1, maximum-scale=1">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> 
+	<meta name="apple-mobile-web-app-capable" content="yes"> 
+	<meta name="apple-mobile-web-app-title" content="mobiAPP"> 
+	<meta name="mobile-web-app-capable" content="yes"> 
+	<link rel="icon" type="image/png" size="128x128" href="img/esp.jpg"> 
+	<link rel="shortcut icon" type="image/png" size="128x128" href="img/esp.jpg"> 
+	<link rel="apple-touch-icon" href="img/esp.jpg"> 	
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<style>
+		button {margin:0.33em;}
+		pre {
+			margin-bottom: 0;
+			font-size: 0.8rem;
+			line-height: 1rem;
+		}
+		textarea#message {min-height:20em;}
+	</style>
+
+<script>
+   var socket = io();
+   $(function () {    
+        $("#send").click(function(){
+            sendMessage({name: $("#name").val(), message: $("#message").val()});
+        })
+        //getMessages()
+    })
+
+    socket.on('message', addMessages);
+    socket.on('info', addInfoMessages);
+	
+
+    function addInfoMessages(message){
+	console.log(message)
+        $("#info").append('<pre>' +message+'\n</pre>');
+    }
+    function addMessages(message){
+        if(message.name) $("#messages").append('<pre>' +message.name+' :: '+message.message+'\n</pre>');
+    }
+
+    function getMessages(){
+      $.get('http://localhost:3009/messages', function(data) {
+		console.log(data)
+        if (data && data !='OK') data.forEach(addMessages);
+      })
+    }
+
+    function sendMessage(message){
+      $.post('http://localhost:3009/messages', message)
+    }
+</script>
+	
+<script>
+
+var option={}
+	option.serial="COM3";
+
+
+function checkSerial(){
+	console.log('checkSerial');
+	sendMessage({"name":"serial", "message": "check"});
+}
+function openSerial(){
+	console.log('openSerial');
+	sendMessage({"name":"serial", "message": "open", "value":option.serial});
+}
+function resetESP(){
+	console.log('resetESP');
+	sendMessage({"name":"esp", "message": "reset", "value":option.serial});
+}
+function fsinfoESP(){
+	console.log('fsinfo');
+	sendMessage({"name":"esp", "message": "fsinfo", "value":option.serial});
+}
+
+</script>
+	
+</head>
+<body>
+<div class="container">
+
+    <div class="row">
+		<div class="col-sm-3">
+			<h5>ESPanel</h5>
+			<button class="btn btn-success" onClick="checkSerial()">Check Serial</button>
+			<button class="btn btn-primary" onClick="openSerial()">Open Serial</button>
+			<button class="btn btn-secundary" onClick="fsinfoESP()">LUA files</button>
+			<button class="btn btn-warning" onClick="resetESP()">Reset</button>
+		</div>
+		<div class="col-sm-9">
+			<h5>Editon</h5>
+			<input id = "name" class="form-control" placeholder="name.lua"><br />
+			<textarea id = "message" class="form-control" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}"></textarea><br />
+			<button id="send" class="btn btn-success">Send to ESP</button>
+		</div>
+	</div>
+	
+	<div class="row">
+		<span class="col-sm" id="messages">messages</span>
+		<span class="col-sm" id="info">info</span>
+	</div>
+</div>
+
+</body>
+</html>
