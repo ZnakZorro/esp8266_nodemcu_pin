@@ -47,7 +47,9 @@
 	
 
     function addInfoMessages(m){
+		console.log(typeof(m))
 		let czas = (new Date()).toLocaleString();
+		$("#info").html(czas+'<pre>\n===============\n</pre>');
 		console.log(m);
 		if (m && m.echo){
 			$("#info").html(czas+'\n<pre class="echo">echo:' +m.echo+'\n</pre>');
@@ -55,7 +57,16 @@
 					$("#info").append('<pre>' +m.response+'\n</pre>');
 				}
 		} else {
-			$("#info").html(czas+'<pre>\n' +m+'\n</pre>');
+			if (!m) return;
+			let arr=[m.toString()]
+			if (typeof(m)=='string') arr = m.split("|");
+			if (typeof(m)=='object') arr = m;
+			//console.log(arr)
+			$.each(arr,function(i,r){
+				console.log(typeof(r))
+				$("#info").append('<pre>'+i+'::'+JSON.stringify(r)+'\n</pre>');
+			});
+			
 		}
     }
 	
@@ -129,14 +140,14 @@ function serialAction(mess){
 	console.log('serialAction=',mess);
 	sendMessage({"name":"serial", "message":mess});
 }
-function checkSerial(){
+/*function checkSerial(){
 	console.log('checkSerial');
 	sendMessage({"name":"serial", "message": "check"});
 }
 function openSerial(){
 	console.log('openSerial');
 	sendMessage({"name":"serial", "message": "open", "value":option.serial});
-}
+}*/
 function resetESP(){
 	console.log('resetESP');
 	sendMessage({"name":"esp", "message": "reset", "value":option.serial});
@@ -171,17 +182,21 @@ function downloadESP(){
 			<button class="btn btn-secondary" 		onClick="downloadESP()">Download <span id="luaname">aaa.lua</span></button>
 			
 			<div>
-				<button class="btn btn-info" 	onClick="checkSerial()">Check Serial</button>
-				<button class="btn btn-success" 	onClick="openSerial()">Open Serial</button>
+				<!--button class="btn btn-info" 	onClick="checkSerial()">Check Serial</button-->
+				<!--button class="btn btn-success" 	onClick="openSerial()">Open Serial</button-->
 				<button class="btn btn-danger" 	onClick="fsinfoESP()">LUA files</button>
 				<button class="btn btn-warning" 	onClick="resetESP()">Reset</button>
 				<hr />
-				<button class="btn btn-light" 	onClick="serialAction('connect')">connect</button>
-				<button class="btn btn-light" 	onClick="serialAction('isConnected')">isConnected</button>
-				<button class="btn btn-light" 	onClick="serialAction('disconnect')">disconnect</button>
-				<button class="btn btn-light" 	onClick="serialAction('checkConnection')">checkConnection</button>
-				<button class="btn btn-light" 	onClick="runLua()">Run</button>
-				<button class="btn btn-light" 	onClick="executeLua('print(node.heap())')">Heap</button>
+				<button class="btn btn-sm btn-info" 	onClick="serialAction('connect')">Connect</button>
+				<button class="btn btn-sm btn-info" 	onClick="serialAction('disconnect')">Disconnect</button>
+				<br />
+				<button class="btn btn-sm btn-info" 	onClick="serialAction('isConnected')">isConnected</button>
+				<button class="btn btn-sm btn-info" 	onClick="serialAction('checkConnection')">checkConnection</button>
+				<br />
+				<button class="btn btn-sm btn-light" 	onClick="serialAction('deviceInfo')">deviceInfo</button>
+				<button class="btn btn-sm btn-light" 	onClick="serialAction('listDevices')">listDevices</button>
+				
+				<button class="btn btn-sm btn-info" 	onClick="executeLua('print(node.heap())')">Heap</button>
 			</div>
 			<div class="" style="background:#e8e8e8;">
 				<span class="colsm" id="return"></span>

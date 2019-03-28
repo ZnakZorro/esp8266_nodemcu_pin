@@ -12,6 +12,8 @@ app.use(bodyParser.urlencoded({extended: false}))
 
 var con = require('./NodeMCU-Tool/lib/nodemcu-connector.js');
 
+con.onError(function(err){console.log('con.onError=',err);})
+
 var portUSB 	= 'COM3';
 var badeRate 	= 115200;
 
@@ -42,10 +44,26 @@ let progress=function(p){
 }
 	
 
+	
 function serialAction(action){
 	console.log('serialAction=',action)
+
+	if (action=='isConnected') 		{let v=con.isConnected(); 		IOslij('info',v);	console.log(v);}
+	if (action=='checkConnection')	{con.checkConnection().then(function(v){IOslij('info',v);console.log(v);})}
+	
+	if (action=='connect') 			{con.connect(portUSB, badeRate, true,1).then(function(v){IOslij('info',v);console.log(v);})}
+	if (action=='disconnect') 		{con.disconnect().then(function(v){IOslij('info',v);console.log(v);})}
+
+	if (action=='deviceInfo') 		{con.deviceInfo().then(function(v){IOslij('info',v);console.log(v);})}
+	if (action=='listDevices') 		{con.listDevices().then(function(v){IOslij('info',v);console.log(v);})}
+
+}
+
+/*function serialAction___(action){
+	console.log('serialAction=',action)
 	con.connect(portUSB, badeRate, true,1)
-		.then(function(retconn){
+		.then(function(retconn)
+		{
 			console.log('retconn=',retconn)
 			if (action=='isConnected') 		con.isConnected().then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
 			if (action=='checkConnection')	con.checkConnection().then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
@@ -53,7 +71,7 @@ function serialAction(action){
 			if (action=='disconnect') 		con.disconnect().then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
 	})
 }
-
+*/
 
 function executeLua(code){
 
@@ -91,7 +109,7 @@ function runLua(file){
 	
 }
 	
-function resetESP(val){
+function resetESP(){
 	console.log('\n================')
 	console.log('resetESP=')
 	con.connect(portUSB, badeRate, true,1)
@@ -120,6 +138,7 @@ function fsinfo(val){
 	})
 	
 }
+/*
 function checkSerial(){
 	console.log('\n================')
 	console.log('checkSerial=')
@@ -134,9 +153,9 @@ function checkSerial(){
 				}).catch(function(e){console.log('e=',e);})
 	})
 }
-
+*/
 function uploadESP(file){
-	console.log('checkSerial=')
+	console.log('uploadESP=')
 	con.connect(portUSB, badeRate, true,1)
 		.then(function(retconn){
 			console.log('retconn=',retconn)
@@ -219,7 +238,7 @@ app.post('/messages', async (req, res) => {
 		//if (mess==='disconnect') checkSerial(); 
 	}
 	if (name==='esp'){
-		if (mess==='reset') checkSerial('reset');
+		if (mess==='reset') resetESP();
 		if (mess==='fsinfo') fsinfo();
 		if (mess==='upload') uploadESP(value);
 		if (mess==='download') downloadESP(value);
