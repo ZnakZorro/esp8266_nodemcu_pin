@@ -44,13 +44,22 @@
 	
 	
 
-    function addInfoMessages(message){
-		console.log(message)
-        $("#info").append('<pre>' +message+'\n</pre>');
+    function addInfoMessages(m){
+		console.log(m);
+		if (m.echo){
+			$("#info").html('<pre>' +m.echo+'\n</pre>');
+				if (m.response){
+					$("#info").append('<pre>' +m.response+'\n</pre>');
+				}
+		} else {
+			$("#info").append('<pre>' +m+'\n</pre>');
+		}
     }
+	
+	
     function addMessages(message){
 		console.log(message)
-        if(message.name) $("#messages").append('<pre>' +message.name+' :: '+message.message+'\n</pre>');
+        if(message.name) $("#messages").html('<pre>' +message.name+' :: '+message.message+'\n</pre>');
     }
     function addfilelistMessages(m){
 		console.log('addfilelistMessages=',m)
@@ -59,11 +68,21 @@
 		$("#terminal").append('<pre>used=' +m.metadata.used+'kB\n</pre>')
 		
 					$('#terminal').append(  '<table />' );
-					$('#terminal table').addClass("table table-striped table-sm")
+					let tabelka = $('#terminal table');
+					tabelka.addClass("table table-striped table-sm")
 					//m.files.sort();
 					$.each(m.files,function(i,x){
-						$('#terminal table').append( '<tr><td>'+x.name+'</td><td>'+x.size+'</td><td>bytes</td></tr>' );
-					})		
+						let klawisz='...';
+						let arr=x.name.split('.');
+						let ext = arr.pop();
+						let onKlik = 'runLua("'+x.name+'")';
+						if (ext==='lua') klawisz='<button onClick='+onKlik+'>Exec</button>';
+						//console.log(klawisz)
+						//klawisz="klaw";
+						tabelka.append( '<tr><td>'+ext+'</td><td>'+x.name+'</td><td>'+x.size+'</td><td>'+klawisz+'</td></tr>' );
+					});
+					//$('#terminal').append(  '</table>' );
+				console.log($($('#terminal table')))
     }
     function filedownloadMessages(mbuff){
 		console.log('-filedownloadMessages---')
@@ -94,6 +113,16 @@ var option={}
 
 
 
+function executeLua(code){
+	code = code || $("#message").val();
+	console.log('executeLua=',code);
+	sendMessage({"name":"lua", "message":"execute", "value":code});
+}
+function runLua(file){
+	file = file || $("#espfile").val();
+	console.log('runLua=',file);
+	sendMessage({"name":"lua", "message":"run", "value":file});
+}
 function serialAction(mess){
 	console.log('serialAction=',mess);
 	sendMessage({"name":"serial", "message":mess});
@@ -134,7 +163,7 @@ function downloadESP(){
 <div class="container">
 
     <div class="row">
-		<div class="col-sm-4">
+		<div class="col-sm">
 			<h5>ESPanel</h5>
 			<button class="btn btn-primary" 		onClick="uploadESP()">UPLOAD <span id="luaname">aaa.lua</span></button>
 			<button class="btn btn-secondary" 		onClick="downloadESP()">Download <span id="luaname">aaa.lua</span></button>
@@ -149,19 +178,25 @@ function downloadESP(){
 				<button class="btn btn-light" 	onClick="serialAction('isConnected')">isConnected</button>
 				<button class="btn btn-light" 	onClick="serialAction('disconnect')">disconnect</button>
 				<button class="btn btn-light" 	onClick="serialAction('checkConnection')">checkConnection</button>
+				<button class="btn btn-light" 	onClick="runLua()">Run</button>
+				<button class="btn btn-light" 	onClick="executeLua('print(node.heap())')">Heap</button>
 				
 				
     	
 			</div>
-			<div class="row">
-				<span class="col-sm-12" id="terminal"></span>
+			<div class="">
+				<span class="col-sm" id="terminal"></span>
 				<span class="col-sm" id="messages"></span>
 				<span class="col-sm" id="info"></span>
 			</div>
 			
 		</div>
-		<div class="col-sm-8">
-			<h5>Editon</h5>
+		<div class="col-sm">
+			<div>
+			<span style="font:bold 1.2rem Verdana">Editon </span>
+			<button class="btn btn-dark" 	onClick="runLua()">Run</button>
+			</div>
+			
 			<input id = "espfile" class="form-control" value="aaa.lua"><br />
 			<textarea id="message" class="form-control" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}">print("aaa")</textarea><br />
 			<button id="send" class="btn btn-success">Save & Send & Run ???</button>
@@ -172,6 +207,7 @@ function downloadESP(){
 
 </body>
 </html>
+<!--
 <button type="button" class="btn">Basic</button>
 <button type="button" class="btn btn-primary">Primary</button>
 <button type="button" class="btn btn-secondary">Secondary</button>
@@ -182,3 +218,4 @@ function downloadESP(){
 <button type="button" class="btn btn-dark">Dark</button>
 <button type="button" class="btn btn-light">Light</button>
 <button type="button" class="btn btn-link">Link</button>
+-->

@@ -54,8 +54,40 @@ function serialAction(action){
 	})
 }
 
+
+function executeLua(code){
+	console.log('\n================')
+	console.log('executeLua=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			con.execute(code)
+				.then(function(ret){
+					console.log(ret)
+					IOslij('info',ret)
+					con.disconnect()
+				}).catch(function(e){console.log('e=',e);})
+	})
+	
+}
+function runLua(file){
+	console.log('\n================')
+	console.log('runLua=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			con.run(file)
+				.then(function(ret){
+					console.log(ret)
+					IOslij('info',ret)
+					con.disconnect()
+				}).catch(function(e){console.log('e=',e);})
+	})
+	
+}
 	
 function resetESP(val){
+	console.log('\n================')
 	console.log('resetESP=')
 	con.connect(portUSB, badeRate, true,1)
 		.then(function(retconn){
@@ -70,6 +102,7 @@ function resetESP(val){
 	
 }
 function fsinfo(val){
+	console.log('\n================')
 	console.log('fsinfo=')
 	con.connect(portUSB, badeRate, true,1)
 		.then(function(retconn){
@@ -83,6 +116,7 @@ function fsinfo(val){
 	
 }
 function checkSerial(){
+	console.log('\n================')
 	console.log('checkSerial=')
 	con.connect(portUSB, badeRate, true,1)
 		.then(function(retconn){
@@ -185,6 +219,11 @@ app.post('/messages', async (req, res) => {
 		if (mess==='upload') uploadESP(value);
 		if (mess==='download') downloadESP(value);
 	}
+	if (name==='lua'){	
+		if (mess==='run') runLua(value);
+		if (mess==='execute') executeLua(value);
+	}
+	
 	console.log(name,mess,value)
      io.emit('message', req.body);
      //io.emit('info', req.body.name);
@@ -210,8 +249,10 @@ io.on('connection', function(socket){
 });
 
 function IOslij(topic,msg){
+	console.log('\n...............IOslij...')
 	console.log(msg)
 	if (socketReady)io.emit(topic, msg);
+	console.log('..................')
 }
 
 var i=0;
