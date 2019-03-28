@@ -56,18 +56,23 @@ function serialAction(action){
 
 
 function executeLua(code){
+
 	console.log('\n================')
 	console.log('executeLua=')
+	console.log('..................................')
+	console.log(code)
+	console.log('..................................')
 	con.connect(portUSB, badeRate, true,1)
 		.then(function(retconn){
 			console.log('retconn=',retconn)
-			con.execute(code)
-				.then(function(ret){
-					console.log(ret)
-					IOslij('info',ret)
-					con.disconnect()
-				}).catch(function(e){console.log('e=',e);})
-	})
+			//let arr = code.split("\n");
+				con.execute(code)
+					.then(function(ret){
+						console.log(ret)
+						IOslij('info',ret)
+						con.disconnect()
+					}).catch(function(e){console.log('e=',e);})
+		})
 	
 }
 function runLua(file){

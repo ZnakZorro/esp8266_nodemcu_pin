@@ -24,7 +24,9 @@
 			font-size: 0.8rem;
 			line-height: 1rem;
 		}
-		textarea#message {min-height:20em;}
+		textarea#message {min-height:20em;}		
+		.col-sm{border: 1px solid gray;}
+		.echo {background:#ddd;}
 	</style>
 
 <script>
@@ -45,14 +47,15 @@
 	
 
     function addInfoMessages(m){
+		let czas = (new Date()).toLocaleString();
 		console.log(m);
-		if (m.echo){
-			$("#info").html('<pre>' +m.echo+'\n</pre>');
+		if (m && m.echo){
+			$("#info").html(czas+'\n<pre class="echo">echo:' +m.echo+'\n</pre>');
 				if (m.response){
 					$("#info").append('<pre>' +m.response+'\n</pre>');
 				}
 		} else {
-			$("#info").append('<pre>' +m+'\n</pre>');
+			$("#info").html(czas+'<pre>\n' +m+'\n</pre>');
 		}
     }
 	
@@ -67,8 +70,8 @@
 		$("#terminal").append('<pre>total=' +m.metadata.total+'kB\n</pre>')
 		$("#terminal").append('<pre>used=' +m.metadata.used+'kB\n</pre>')
 		
-					$('#terminal').append(  '<table />' );
-					let tabelka = $('#terminal table');
+					$('#return').append(  '<table />' );
+					let tabelka = $('#return table');
 					tabelka.addClass("table table-striped table-sm")
 					//m.files.sort();
 					$.each(m.files,function(i,x){
@@ -81,8 +84,7 @@
 						//klawisz="klaw";
 						tabelka.append( '<tr><td>'+ext+'</td><td>'+x.name+'</td><td>'+x.size+'</td><td>'+klawisz+'</td></tr>' );
 					});
-					//$('#terminal').append(  '</table>' );
-				console.log($($('#terminal table')))
+				
     }
     function filedownloadMessages(mbuff){
 		console.log('-filedownloadMessages---')
@@ -163,7 +165,7 @@ function downloadESP(){
 <div class="container">
 
     <div class="row">
-		<div class="col-sm">
+		<div class="col-sm-6">
 			<h5>ESPanel</h5>
 			<button class="btn btn-primary" 		onClick="uploadESP()">UPLOAD <span id="luaname">aaa.lua</span></button>
 			<button class="btn btn-secondary" 		onClick="downloadESP()">Download <span id="luaname">aaa.lua</span></button>
@@ -180,27 +182,32 @@ function downloadESP(){
 				<button class="btn btn-light" 	onClick="serialAction('checkConnection')">checkConnection</button>
 				<button class="btn btn-light" 	onClick="runLua()">Run</button>
 				<button class="btn btn-light" 	onClick="executeLua('print(node.heap())')">Heap</button>
-				
-				
-    	
 			</div>
-			<div class="">
-				<span class="col-sm" id="terminal"></span>
-				<span class="col-sm" id="messages"></span>
-				<span class="col-sm" id="info"></span>
+			<div class="" style="background:#e8e8e8;">
+				<span class="colsm" id="return"></span>
+				
+				
 			</div>
 			
 		</div>
-		<div class="col-sm">
+		
+		<div class="col-sm-6">
 			<div>
-			<span style="font:bold 1.2rem Verdana">Editon </span>
-			<button class="btn btn-dark" 	onClick="runLua()">Run</button>
+				<span style="font:bold 1.2rem Verdana">Editon </span>
+				<button class="btn btn-dark" 	onClick="runLua()">Run</button>
+				<button class="btn btn-light" 	onClick="executeLua()">Execute</button>
 			</div>
-			
-			<input id = "espfile" class="form-control" value="aaa.lua"><br />
-			<textarea id="message" class="form-control" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}">print("aaa")</textarea><br />
-			<button id="send" class="btn btn-success">Save & Send & Run ???</button>
+			<div>
+				<input id = "espfile" class="form-control" value="aaa.lua"><br />
+				<textarea id="message" class="form-control" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}">print("aaa")</textarea><br />
+				<button id="send" class="btn btn-success">Save & Send & Run ???</button>
+			</div>
+			<div id="terminal"></div>
+			<span class="colsm" id="messages"></span>
+			<span class="colsm" id="info"></span>
 		</div>
+		
+		
 	</div>
 	
 </div>
