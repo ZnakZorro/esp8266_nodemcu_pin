@@ -11,10 +11,12 @@
 	<link rel="shortcut icon" type="image/png" size="128x128" href="img/esp.jpg"> 
 	<link rel="apple-touch-icon" href="img/esp.jpg"> 	
 	
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-	<script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <script src="/socket.io/socket.io.js"></script>
 	<style>
 		button {margin:0.33em;}
 		pre {
@@ -29,22 +31,49 @@
    var socket = io();
    $(function () {    
         $("#send").click(function(){
-            sendMessage({name: $("#name").val(), message: $("#message").val()});
+            sendMessage({name:"test",message: $("#espfile").val(), value: $("#message").val()});
+			//sendMessage({"name":"serial", "message": "open", "value":option.serial});
         })
         //getMessages()
     })
 
     socket.on('message', addMessages);
     socket.on('info', addInfoMessages);
+    socket.on('filelist', addfilelistMessages);
+    socket.on('filedownload', filedownloadMessages);
+	
 	
 
     function addInfoMessages(message){
-	console.log(message)
+		console.log(message)
         $("#info").append('<pre>' +message+'\n</pre>');
     }
     function addMessages(message){
+		console.log(message)
         if(message.name) $("#messages").append('<pre>' +message.name+' :: '+message.message+'\n</pre>');
     }
+    function addfilelistMessages(m){
+		console.log('addfilelistMessages=',m)
+		$("#terminal").append('<pre>remaining=' +m.metadata.remaining+'kB\n</pre>')
+		$("#terminal").append('<pre>total=' +m.metadata.total+'kB\n</pre>')
+		$("#terminal").append('<pre>used=' +m.metadata.used+'kB\n</pre>')
+		
+					$('#terminal').append(  '<table />' );
+					$('#terminal table').addClass("table table-striped table-sm")
+					//m.files.sort();
+					$.each(m.files,function(i,x){
+						$('#terminal table').append( '<tr><td>'+x.name+'</td><td>'+x.size+'</td><td>bytes</td></tr>' );
+					})		
+    }
+    function filedownloadMessages(mbuff){
+		console.log('-filedownloadMessages---')
+		console.log(mbuff)
+		console.log()
+		$('#message').text(mbuff.toString())
+    }
+	
+	
+	
 
     function getMessages(){
       $.get('http://localhost:3009/messages', function(data) {
@@ -64,6 +93,11 @@ var option={}
 	option.serial="COM3";
 
 
+
+function serialAction(mess){
+	console.log('serialAction=',mess);
+	sendMessage({"name":"serial", "message":mess});
+}
 function checkSerial(){
 	console.log('checkSerial');
 	sendMessage({"name":"serial", "message": "check"});
@@ -80,6 +114,18 @@ function fsinfoESP(){
 	console.log('fsinfo');
 	sendMessage({"name":"esp", "message": "fsinfo", "value":option.serial});
 }
+function uploadESP(){
+	let file = $("#luaname").text()
+	console.log('uploadESP',file);
+	sendMessage({"name":"esp", "message": "upload", "value":file});
+}
+function downloadESP(){
+	let file = $("#luaname").text()
+	console.log('downloadESP',file);
+	sendMessage({"name":"esp", "message": "download", "value":file});
+}
+
+
 
 </script>
 	
@@ -88,26 +134,51 @@ function fsinfoESP(){
 <div class="container">
 
     <div class="row">
-		<div class="col-sm-3">
+		<div class="col-sm-4">
 			<h5>ESPanel</h5>
-			<button class="btn btn-success" onClick="checkSerial()">Check Serial</button>
-			<button class="btn btn-primary" onClick="openSerial()">Open Serial</button>
-			<button class="btn btn-secundary" onClick="fsinfoESP()">LUA files</button>
-			<button class="btn btn-warning" onClick="resetESP()">Reset</button>
+			<button class="btn btn-primary" 		onClick="uploadESP()">UPLOAD <span id="luaname">aaa.lua</span></button>
+			<button class="btn btn-secondary" 		onClick="downloadESP()">Download <span id="luaname">aaa.lua</span></button>
+			
+			<div>
+				<button class="btn btn-info" 	onClick="checkSerial()">Check Serial</button>
+				<button class="btn btn-success" 	onClick="openSerial()">Open Serial</button>
+				<button class="btn btn-danger" 	onClick="fsinfoESP()">LUA files</button>
+				<button class="btn btn-warning" 	onClick="resetESP()">Reset</button>
+				<hr />
+				<button class="btn btn-light" 	onClick="serialAction('connect')">connect</button>
+				<button class="btn btn-light" 	onClick="serialAction('isConnected')">isConnected</button>
+				<button class="btn btn-light" 	onClick="serialAction('disconnect')">disconnect</button>
+				<button class="btn btn-light" 	onClick="serialAction('checkConnection')">checkConnection</button>
+				
+				
+    	
+			</div>
+			<div class="row">
+				<span class="col-sm-12" id="terminal"></span>
+				<span class="col-sm" id="messages"></span>
+				<span class="col-sm" id="info"></span>
+			</div>
+			
 		</div>
-		<div class="col-sm-9">
+		<div class="col-sm-8">
 			<h5>Editon</h5>
-			<input id = "name" class="form-control" placeholder="name.lua"><br />
-			<textarea id = "message" class="form-control" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}"></textarea><br />
-			<button id="send" class="btn btn-success">Send to ESP</button>
+			<input id = "espfile" class="form-control" value="aaa.lua"><br />
+			<textarea id="message" class="form-control" onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}">print("aaa")</textarea><br />
+			<button id="send" class="btn btn-success">Save & Send & Run ???</button>
 		</div>
 	</div>
 	
-	<div class="row">
-		<span class="col-sm" id="messages">messages</span>
-		<span class="col-sm" id="info">info</span>
-	</div>
 </div>
 
 </body>
 </html>
+<button type="button" class="btn">Basic</button>
+<button type="button" class="btn btn-primary">Primary</button>
+<button type="button" class="btn btn-secondary">Secondary</button>
+<button type="button" class="btn btn-success">Success</button>
+<button type="button" class="btn btn-info">Info</button>
+<button type="button" class="btn btn-warning">Warning</button>
+<button type="button" class="btn btn-danger">Danger</button>
+<button type="button" class="btn btn-dark">Dark</button>
+<button type="button" class="btn btn-light">Light</button>
+<button type="button" class="btn btn-link">Link</button>

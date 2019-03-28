@@ -12,6 +12,8 @@ app.use(bodyParser.urlencoded({extended: false}))
 
 var con = require('./NodeMCU-Tool/lib/nodemcu-connector.js');
 
+var portUSB 	= 'COM3';
+var badeRate 	= 115200;
 
 /*qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq*/
 /*
@@ -33,9 +35,29 @@ var con = require('./NodeMCU-Tool/lib/nodemcu-connector.js');
     hardreset: _reset.hardreset,
     run: _run
 	*/
+	
+let progress=function(p){
+	console.log(p+"%")
+	IOslij('info',p)
+}
+	
+
+function serialAction(action){
+	console.log('serialAction=',action)
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			if (action=='isConnected') 		con.isConnected().then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
+			if (action=='checkConnection')	con.checkConnection().then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
+			if (action=='connect') 			con.connect(portUSB, badeRate, true,1).then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
+			if (action=='disconnect') 		con.disconnect().then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
+	})
+}
+
+	
 function resetESP(val){
-	console.log('checkSerial=')
-	con.connect('COM3', 115200, true,1)
+	console.log('resetESP=')
+	con.connect(portUSB, badeRate, true,1)
 		.then(function(retconn){
 			console.log('retconn=',retconn)
 			con.hardreset()
@@ -48,14 +70,13 @@ function resetESP(val){
 	
 }
 function fsinfo(val){
-	console.log('checkSerial=')
-	con.connect('COM3', 115200, true,1)
+	console.log('fsinfo=')
+	con.connect(portUSB, badeRate, true,1)
 		.then(function(retconn){
 			console.log('retconn=',retconn)
 			con.fsinfo()
 				.then(function(ret){
-					console.log(ret)
-					IOslij('info',ret)
+					if(ret) IOslij('filelist',ret)
 					con.disconnect()
 				}).catch(function(e){console.log('e=',e);})
 	})
@@ -63,7 +84,7 @@ function fsinfo(val){
 }
 function checkSerial(){
 	console.log('checkSerial=')
-	con.connect('COM3', 115200, true,1)
+	con.connect(portUSB, badeRate, true,1)
 		.then(function(retconn){
 			console.log('retconn=',retconn)
 			con.deviceInfo()
@@ -73,8 +94,40 @@ function checkSerial(){
 					con.disconnect()
 				}).catch(function(e){console.log('e=',e);})
 	})
-	
 }
+
+function uploadESP(file){
+	console.log('checkSerial=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			IOslij('info',retconn)
+			con.upload(file,file,{"minify":null},progress)
+				.then(function(ret){
+					console.log('upload ret=',ret)
+					IOslij('info',ret)
+					con.disconnect()
+				}).catch(function(e){console.log('e=',e);})
+	})
+}
+
+function downloadESP(file){
+	console.log('downloadESP=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn downloadESP=',retconn)
+			IOslij('info',retconn)
+			con.download(file)
+				.then(function(ret){
+					con.disconnect()
+					console.log('download ret=',ret)
+					IOslij('filedownload',ret.toString())
+					
+				}).catch(function(e){console.log('e=',e);})
+	})
+}
+
+
 /*qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq*/
 
 
@@ -104,6 +157,11 @@ app.get('/messages/:user', (req, res) => {
 })
 */
 
+function test(mess,value){
+	console.log('TEST===',mess,value)
+	
+}
+
 app.post('/messages', async (req, res) => {
   try{
     let message = (req.body);
@@ -111,12 +169,21 @@ app.post('/messages', async (req, res) => {
 	let name  = message.name || null;
 	let mess  = message.message || null;
 	let value = message.value || null;	
+	console.log('name=',name)
+	console.log('mess=',mess)
+	console.log('value=',value)
+	if (name==='test'){test(mess,value);}
 	if (name==='serial'){
-		if (mess==='check') checkSerial();
+			serialAction(mess);
+		//if (mess==='checkConnection') checkSerial();
+		//if (mess==='connect') checkSerial();
+		//if (mess==='disconnect') checkSerial(); 
 	}
 	if (name==='esp'){
 		if (mess==='reset') checkSerial('reset');
 		if (mess==='fsinfo') fsinfo();
+		if (mess==='upload') uploadESP(value);
+		if (mess==='download') downloadESP(value);
 	}
 	console.log(name,mess,value)
      io.emit('message', req.body);
