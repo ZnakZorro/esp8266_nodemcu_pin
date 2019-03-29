@@ -18,6 +18,8 @@
 
   <script src="/socket.io/socket.io.js"></script>
 	<style>
+		body {font-family:verdana;}
+		body,button {font-size:13px;}
 		button {margin:0.33em;}
 		pre {
 			margin-bottom: 0;
@@ -32,6 +34,7 @@
 			padding: .1rem .3rem;
 			font-size: .875rem;
 			line-height: 1.25;
+			margin:0;
 		}
 	</style>
 
@@ -94,27 +97,28 @@
 		console.log(message)
         if(message.name) $("#messages").html('<pre>' +message.name+' :: '+message.message+'\n</pre>');
     }
+		
+	
     function addfilelistMessages(m){
-		console.log('addfilelistMessages=',m)
+		console.log('addfilelistMessages=',m);
+		$('#return').empty();
+		$('#terminal').empty();
 		$("#terminal").append('<pre>remaining=' +m.metadata.remaining+'kB\n</pre>')
 		$("#terminal").append('<pre>total=' +m.metadata.total+'kB\n</pre>')
 		$("#terminal").append('<pre>used=' +m.metadata.used+'kB\n</pre>')
 		// sortowanie ukladanie
-		let pliki ={}
+		let pliki ={'lua':[],"lc":[],"html":[]}
 		$.each(m.files,function(i,y){
 			let arr=y.name.split('.');
 			let ext = arr.pop();
 			if(!pliki[ext]) pliki[ext]=[];
 			pliki[ext].push(y);
 		});
-		//pliki['luaa']=pliki['lua']
-		
-		console.log(pliki)
 		
 		
 		let tabelki={};
 		$.each(pliki,function(ext,files){			
-			console.log(ext)
+			//console.log(ext);
 			$('#return').append('<h3>'+ext+'</h3>');
 			let tabelka = $('<table>', { id: ext, class:"table table-striped table-sm"});				
 			//tabelka.addClass("table table-striped table-sm")
@@ -122,13 +126,15 @@
 					//console.log('x=',x)
 					let onKlik1 = 'runLua("'+x.name+'")';
 					let onKlik2 = 'editLua("'+x.name+'")';
-					let klawisz1='...';
-					let klawisz2='...';
-					if (ext==='lua') {
-						klawisz1='<button class="btn btn-secondary btn-sm" onClick='+onKlik1+'>Exec</button>';
+					let klawisz1='&nbsp;';
+					let klawisz2='&nbsp;';
+					if (ext==='lua' || ext==='lc') {
+						klawisz1='<button class="btn btn-info btn-sm" onClick='+onKlik1+'>Exec</button>';
+					}
+					if (ext==='lua' || ext==='txt' || ext==='html') {
 						klawisz2='<button class="btn btn-secondary btn-sm" onClick='+onKlik2+'>Edit</button>';
 					}
-					tabelka.append( '<tr><td>'+ext+'</td><td>'+x.name+'</td><td>'+x.size+'</td><td>'+klawisz1+'</td><td>'+klawisz2+'</td></tr>' );
+					tabelka.append( '<tr><td>'+x.name+'</td><td>'+x.size+'</td><td>'+klawisz1+'</td><td>'+klawisz2+'</td></tr>' );
 			});
 			$('#return').append(tabelka);
 		});
@@ -221,7 +227,7 @@ function downloadESP(file){
 <div class="container">
 
     <div class="row">
-		<div class="col-lg-6">
+		<div class="col-xl-4">
 			<h5>ESPanel</h5>
 			<button class="btn btn-primary" 		onClick="uploadESP()">UPLOAD <span id="luaname">aaa.lua</span></button>
 			<button class="btn btn-secondary" 		onClick="downloadESP()">Download <span id="luaname">aaa.lua</span></button>
@@ -251,7 +257,7 @@ function downloadESP(file){
 			
 		</div>
 		
-		<div class="col-lg-6">
+		<div class="col-xl-8">
 			<div>
 				<span style="font:bold 1.2rem Verdana">Editon </span>
 				<button class="btn btn-dark" 	onClick="runLua()">Run</button>
