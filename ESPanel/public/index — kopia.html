@@ -107,31 +107,56 @@
 			if(!pliki[ext]) pliki[ext]=[];
 			pliki[ext].push(y);
 		});
-		//pliki['luaa']=pliki['lua']
-		
-		console.log(pliki)
-		
-		
+		//		console.log(pliki);		console.log(222);
 		let tabelki={};
-		$.each(pliki,function(ext,files){			
-			console.log(ext)
-			$('#return').append('<h3>'+ext+'</h3>');
-			let tabelka = $('<table>', { id: ext, class:"table table-striped table-sm"});				
-			//tabelka.addClass("table table-striped table-sm")
-				$.each(files,function(i,x){
-					//console.log('x=',x)
-					let onKlik1 = 'runLua("'+x.name+'")';
-					let onKlik2 = 'editLua("'+x.name+'")';
-					let klawisz1='...';
-					let klawisz2='...';
-					if (ext==='lua') {
-						klawisz1='<button class="btn btn-secondary btn-sm" onClick='+onKlik1+'>Exec</button>';
-						klawisz2='<button class="btn btn-secondary btn-sm" onClick='+onKlik2+'>Edit</button>';
-					}
-					tabelka.append( '<tr><td>'+ext+'</td><td>'+x.name+'</td><td>'+x.size+'</td><td>'+klawisz1+'</td><td>'+klawisz2+'</td></tr>' );
+		$.each(pliki,function(ext,files){
+			//console.log(ext)
+			//console.log(files)
+				let tab = $('<table>', { id: ext});
+				console.log(tab)
+				$('#return').append('<h3>'+ext+'</h3>');
+				$('#return').append(  '<table id="'+ext+'"/>' );
+				tabelki[ext] = $('#return table');
+				let tabelka = tabelki[ext] 
+					
+				tabelka.addClass("table table-striped table-sm")
+			
+					$.each(files,function(i,x){
+						console.log('x=',x)
+						let onKlik1 = 'runLua("'+x.name+'")';
+						let onKlik2 = 'editLua("'+x.name+'")';
+						let klawisz1='...';
+						let klawisz2='...';
+						if (ext==='lua') {
+							klawisz1='<button class="btn btn-secondary btn-sm" onClick='+onKlik1+'>Exec</button>';
+							klawisz2='<button class="btn btn-secondary btn-sm" onClick='+onKlik2+'>Edit</button>';
+						}
+						//console.log(klawisz)
+						//klawisz="klaw";
+						tabelka.append( '<tr><td>'+ext+'</td><td>'+x.name+'</td><td>'+x.size+'</td><td>'+klawisz1+'</td><td>'+klawisz2+'</td></tr>' );
+				})
 			});
-			$('#return').append(tabelka);
-		});
+		/*
+					$('#return').append(  '<table />' );
+					let tabelka = $('#return table');
+					tabelka.addClass("table table-striped table-sm")
+					//m.files.sort();
+					$.each(m.files,function(i,x){
+						let arr=x.name.split('.');
+						let ext = arr.pop();
+						let onKlik1 = 'runLua("'+x.name+'")';
+						let onKlik2 = 'editLua("'+x.name+'")';
+						let klawisz1='...';
+						let klawisz2='...';
+						if (ext==='lua') {
+							klawisz1='<button class="btn btn-secondary btn-sm" onClick='+onKlik1+'>Exec</button>';
+							klawisz2='<button class="btn btn-secondary btn-sm" onClick='+onKlik2+'>Edit</button>';
+						}
+						//console.log(klawisz)
+						//klawisz="klaw";
+						tabelka.append( '<tr><td>'+ext+'</td><td>'+x.name+'</td><td>'+x.size+'</td><td>'+klawisz1+'</td><td>'+klawisz2+'</td></tr>' );
+					});
+		*/		
     }
     function filedownloadMessages(mbuff){
 		console.log('-filedownloadMessages---')
@@ -243,7 +268,7 @@ function downloadESP(file){
 				
 				<button class="btn btn-sm btn-info" 	onClick="executeLua('print(node.heap())')">Heap</button>
 			</div>
-			<div>
+			<div class="" style="background:#e8e8e8;">
 				<span class="colsm" id="return"></span>
 				
 				

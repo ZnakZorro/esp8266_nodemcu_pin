@@ -16,22 +16,34 @@ con.onError(function(err){console.log('con.onError=',err);})
 
 var portUSB 	= 'COM3';
 var badeRate 	= 115200;
-var isCONN 		= false
+
+/*qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq*/
+/*
+    onError: _virtualTerminal.onError,
+    disconnect: _virtualTerminal.disconnect,
+    connect: _connect,
+    isConnected: _virtualTerminal.isConnected,
+    checkConnection: _checkConnection,
+    compile: _compile,
+    deviceInfo: _deviceInfo,
+    listDevices: _devices,
+    download: _download,
+    upload: _upload,
+    execute: _execute,
+    format: _format,
+    fsinfo: _fsinfo,
+    remove: _remove,
+    softreset: _reset.softreset,
+    hardreset: _reset.hardreset,
+    run: _run
+	*/
 	
 let progress=function(p){
 	console.log(p+"%")
 	IOslij('info',p)
 }
 	
-function resetESP(){
-	console.log('\n================')
-	console.log('#28 resetESP=')
-	con.hardreset()
-		.then(function(ret){
-			console.log(ret)
-			IOslij('info',ret)
-		}).catch(function(e){console.log('e=',e);})	
-}
+
 	
 function serialAction(action){
 	console.log('serialAction=',action)
@@ -39,82 +51,140 @@ function serialAction(action){
 	if (action=='isConnected') 		{let v=con.isConnected(); 		IOslij('info',v);	console.log(v);}
 	if (action=='checkConnection')	{con.checkConnection().then(function(v){IOslij('info',v);console.log(v);})}
 	
-	if (action=='connect') 			{con.connect(portUSB, badeRate, true,1).then(function(v){IOslij('startPage',true);console.log(v);})}
-	if (action=='disconnect') 		{con.disconnect().then(function(v){IOslij('startPage',v);console.log(v);})}
+	if (action=='connect') 			{con.connect(portUSB, badeRate, true,1).then(function(v){IOslij('info',v);console.log(v);})}
+	if (action=='disconnect') 		{con.disconnect().then(function(v){IOslij('info',v);console.log(v);})}
 
 	if (action=='deviceInfo') 		{con.deviceInfo().then(function(v){IOslij('info',v);console.log(v);})}
 	if (action=='listDevices') 		{con.listDevices().then(function(v){IOslij('info',v);console.log(v);})}
 
 }
 
+/*function serialAction___(action){
+	console.log('serialAction=',action)
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn)
+		{
+			console.log('retconn=',retconn)
+			if (action=='isConnected') 		con.isConnected().then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
+			if (action=='checkConnection')	con.checkConnection().then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
+			if (action=='connect') 			con.connect(portUSB, badeRate, true,1).then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
+			if (action=='disconnect') 		con.disconnect().then(function(ret){IOslij('info',ret);}).catch(function(e){console.log('e=',e);})
+	})
+}
+*/
+
 function executeLua(code){
+
 	console.log('\n================')
-	console.log('#52 executeLua=')
+	console.log('executeLua=')
 	console.log('..................................')
 	console.log(code)
 	console.log('..................................')
-	con.execute(code)
-		.then(function(ret){
-			console.log(ret)
-			IOslij('info',ret)
-		}).catch(function(e){console.log('e=',e);})
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			//let arr = code.split("\n");
+				con.execute(code)
+					.then(function(ret){
+						console.log(ret)
+						IOslij('info',ret)
+						con.disconnect()
+					}).catch(function(e){console.log('e=',e);})
+		})
 	
 }
 function runLua(file){
 	console.log('\n================')
-	console.log('#65 runLua=')
-	con.run(file)
-		.then(function(ret){
-			console.log(ret)
-			IOslij('info',ret)
-		}).catch(function(e){console.log('e=',e);})	
+	console.log('runLua=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			con.run(file)
+				.then(function(ret){
+					console.log(ret)
+					IOslij('info',ret)
+					con.disconnect()
+				}).catch(function(e){console.log('e=',e);})
+	})
+	
 }
 	
-
+function resetESP(){
+	console.log('\n================')
+	console.log('resetESP=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			con.hardreset()
+				.then(function(ret){
+					console.log(ret)
+					IOslij('info',ret)
+					con.disconnect()
+				}).catch(function(e){console.log('e=',e);})
+	})
+	
+}
 function fsinfo(val){
 	console.log('\n================')
-	console.log('#76 fsinfo=')
-	con.fsinfo()
-		.then(function(ret){
-			if(ret) IOslij('filelist',ret)			
-		}).catch(function(e){console.log('e=',e);})	
+	console.log('fsinfo=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			con.fsinfo()
+				.then(function(ret){
+					if(ret) IOslij('filelist',ret)
+					con.disconnect()
+				}).catch(function(e){console.log('e=',e);})
+	})
+	
 }
-
+/*
+function checkSerial(){
+	console.log('\n================')
+	console.log('checkSerial=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			con.deviceInfo()
+				.then(function(ret){
+					console.log(ret)
+					IOslij('info',ret)
+					con.disconnect()
+				}).catch(function(e){console.log('e=',e);})
+	})
+}
+*/
 function uploadESP(file){
-	console.log('#84 uploadESP=')
-	con.upload(file,file,{"minify":null},progress)
-		.then(function(ret){
-			console.log('upload ret=',ret)
-			IOslij('info',ret)
-		}).catch(function(e){console.log('e=',e);})
+	console.log('uploadESP=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn=',retconn)
+			IOslij('info',retconn)
+			con.upload(file,file,{"minify":null},progress)
+				.then(function(ret){
+					console.log('upload ret=',ret)
+					IOslij('info',ret)
+					con.disconnect()
+				}).catch(function(e){console.log('e=',e);})
+	})
 }
 
 function downloadESP(file){
-	console.log('\n================')
-	console.log('#94 downloadESP=')
-	con.download(file)
-		.then(function(ret){
-			console.log('download ret=',ret)
-			IOslij('filedownload',ret.toString())
-			
-		}).catch(function(e){console.log('e=',e);})
+	console.log('downloadESP=')
+	con.connect(portUSB, badeRate, true,1)
+		.then(function(retconn){
+			console.log('retconn downloadESP=',retconn)
+			IOslij('info',retconn)
+			con.download(file)
+				.then(function(ret){
+					con.disconnect()
+					console.log('download ret=',ret)
+					IOslij('filedownload',ret.toString())
+					
+				}).catch(function(e){console.log('e=',e);})
+	})
 }
 
-function test(mess,value){
-	console.log('TEST===',mess,value)
-	
-}
-
-function startPAGE(){
-	isCONN =con.isConnected();
-	if (!isCONN){
-		serialAction('connect');
-		isCONN =con.isConnected();
-		IOslij('startPage',isCONN)
-	} else IOslij('startPage',isCONN)
-
-	
-}
 
 /*qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq*/
 
@@ -145,7 +215,10 @@ app.get('/messages/:user', (req, res) => {
 })
 */
 
-
+function test(mess,value){
+	console.log('TEST===',mess,value)
+	
+}
 
 app.post('/messages', async (req, res) => {
   try{
@@ -174,7 +247,6 @@ app.post('/messages', async (req, res) => {
 		if (mess==='run') runLua(value);
 		if (mess==='execute') executeLua(value);
 	}
-	if (name==='startPAGE'){startPAGE();}	
 	
 	console.log(name,mess,value)
      io.emit('message', req.body);
@@ -220,25 +292,3 @@ setInterval(function(){
 var server = http.listen(3009, () => {
   console.log('server is running on port', server.address().port);
 });
-
-
-/*qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq*/
-/*
-    onError: _virtualTerminal.onError,
-    disconnect: _virtualTerminal.disconnect,
-    connect: _connect,
-    isConnected: _virtualTerminal.isConnected,
-    checkConnection: _checkConnection,
-    compile: _compile,
-    deviceInfo: _deviceInfo,
-    listDevices: _devices,
-    download: _download,
-    upload: _upload,
-    execute: _execute,
-    format: _format,
-    fsinfo: _fsinfo,
-    remove: _remove,
-    softreset: _reset.softreset,
-    hardreset: _reset.hardreset,
-    run: _run
-	*/
