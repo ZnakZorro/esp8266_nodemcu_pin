@@ -1,4 +1,4 @@
-var moduleDIR='../../node_modules/';
+var moduleDIR='../node_modules/';
 var express = require(moduleDIR+'express');
 var bodyParser = require(moduleDIR+'body-parser')
 var app = express();
@@ -6,17 +6,32 @@ var http = require('http').Server(app);
 var io = require(moduleDIR+'socket.io')(http);
 var socketReady=false;
 
+			var OPTIONS = require('./public/js/options');
+			var FUNCTIONS = require('./public/js/functions');
+			/*
+			console.log(OPTIONS)
+			console.log(OPTIONS.portUSB)
+			console.log(OPTIONS.baudRate)
+			
+			console.log(FUNCTIONS)
+			console.log(FUNCTIONS.Calc.add)
+			var ad=FUNCTIONS.Calc.add(2,4)
+			console.log(ad)
+			*/
+			var portUSB 	= OPTIONS.portUSB;
+			var baudRate 	= OPTIONS.baudRate;
+			var isCONN 		= false
+
 app.use(express.static(__dirname+'/public/'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}))
 
-var con = require('./NodeMCU-Tool/lib/nodemcu-connector.js');
+//var con = require('./NodeMCU-Tool/lib/nodemcu-connector.js');
+var con = require(moduleDIR+'nodemcu-tool/lib/nodemcu-connector.js');
 
 con.onError(function(err){console.log('con.onError=',err);})
 
-var portUSB 	= 'COM3';
-var badeRate 	= 115200;
-var isCONN 		= false
+
 	
 let progress=function(p){
 	console.log(p+"%")
@@ -39,7 +54,7 @@ function serialAction(action){
 	if (action=='isConnected') 		{let v=con.isConnected(); 		IOslij('info',v);	console.log(v);}
 	if (action=='checkConnection')	{con.checkConnection().then(function(v){IOslij('info',v);console.log(v);})}
 	
-	if (action=='connect') 			{con.connect(portUSB, badeRate, true,1).then(function(v){IOslij('startPage',true);console.log(v);})}
+	if (action=='connect') 			{con.connect(portUSB, baudRate, true,1).then(function(v){IOslij('startPage',true);console.log(v);})}
 	if (action=='disconnect') 		{con.disconnect().then(function(v){IOslij('startPage',v);console.log(v);})}
 
 	if (action=='deviceInfo') 		{con.deviceInfo().then(function(v){IOslij('info',v);console.log(v);})}
@@ -118,6 +133,10 @@ function startPAGE(){
 
 /*qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq*/
 
+app.use((req, res, next) => {
+    console.log('#123 next newTime: ', Date.now(),(new Date()).toLocaleString());
+    next();
+});
 
 app.get('/messages', (req, res) => {
   try{

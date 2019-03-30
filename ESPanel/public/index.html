@@ -17,6 +17,8 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/options.js"></script>
+  <script src="/js/functions.js"></script>
 	<style>
 		body {font-family:verdana;}
 		body,button {font-size:13px;}
@@ -26,8 +28,8 @@
 			font-size: 0.8rem;
 			line-height: 1rem;
 		}
-		textarea#message {min-height:20em;}		
-		.col-lg{border: 1px solid gray;}
+		textarea#message {min-height:22em; font-size:0.9em;}		
+		.col-xl{border: 1px solid gray;}
 		.echo {background:#ddd;}
 		/*tr.tr-sm {padding:0;}*/
 		td .btn-sm {
@@ -39,7 +41,14 @@
 	</style>
 
 <script>
+			console.log('calc_test_web');
+			console.log(Calc.add(2, 3));    // 5
+			console.log(Calc.div(14, 2));   // 7
+			console.log(Calc.version);  
+			console.log(portUSB,baudRate);  
+
    var socket = io();
+   // DOM ready
    $(function () {    
         $("#send").click(function(){
             sendMessage({name:"test",message: $("#espfile").val(), value: $("#message").val()});
@@ -47,6 +56,27 @@
         })
         //getMessages()
 	sendMessage({name:"startPAGE"});
+		$('#portUSB').val(portUSB);
+		$('#baudRate').val(baudRate);
+			/*$("#portUSB").on("input", function(e) {
+				portUSB = $("#portUSB").val();
+				console.log(portUSB)
+			});
+			$("#baudRate").on("input", function(e) {
+				baudRate = $("#baudRate").val();
+				console.log(baudRate)
+			});*/
+			$("#portUSB").on("change", function(e) {
+				portUSB = $("#portUSB").val();
+				console.log(portUSB)
+				// ...send to backend
+			});
+			$("#baudRate").on("change", function(e) {
+				baudRate = $("#baudRate").val();
+				console.log(baudRate)
+				// ...send to backend
+			});
+			
     })
 
     socket.on('message', addMessages);
@@ -107,7 +137,7 @@
 		$("#terminal").append('<pre>total=' +m.metadata.total+'kB\n</pre>')
 		$("#terminal").append('<pre>used=' +m.metadata.used+'kB\n</pre>')
 		// sortowanie ukladanie
-		let pliki ={'lua':[],"lc":[],"html":[]}
+		let pliki ={'lua':[],"lc":[],"html":[],"json":[],"txt":[]}
 		$.each(m.files,function(i,y){
 			let arr=y.name.split('.');
 			let ext = arr.pop();
@@ -115,11 +145,16 @@
 			pliki[ext].push(y);
 		});
 		
-		
-		let tabelki={};
+
 		$.each(pliki,function(ext,files){			
 			//console.log(ext);
-			$('#return').append('<h3>'+ext+'</h3>');
+			if(files.length) {
+				$('#return').append('<h3>'+ext+'</h3>');
+				//let ff=files.sort(function(a,b){return (a.name > b.name)});
+				//let ff=files.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+				files=files.sort(function(a,b){return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0)});
+				console.log(files)
+			}
 			let tabelka = $('<table>', { id: ext, class:"table table-striped table-sm"});				
 			//tabelka.addClass("table table-striped table-sm")
 				$.each(files,function(i,x){
@@ -164,7 +199,7 @@
 <script>
 
 var option={}
-	option.serial="COM3";
+	option.serial="COM4";
 
 
 
@@ -226,37 +261,33 @@ function downloadESP(file){
 <body>
 <div class="container">
 
-    <div class="row">
-		<div class="col-xl-4">
-			<h5>ESPanel</h5>
-			<button class="btn btn-primary" 		onClick="uploadESP()">UPLOAD <span id="luaname">aaa.lua</span></button>
-			<button class="btn btn-secondary" 		onClick="downloadESP()">Download <span id="luaname">aaa.lua</span></button>
-			
-			<div>
-				<!--button class="btn btn-info" 	onClick="checkSerial()">Check Serial</button-->
-				<!--button class="btn btn-success" 	onClick="openSerial()">Open Serial</button-->
-				<button class="btn btn-danger" 	onClick="fsinfoESP()">LUA files</button>
-				<button class="btn btn-warning" 	onClick="resetESP()">Reset</button>
-				<hr />
-				<button id="btn-disconnect" class="btn btn-sm btn-danger" 	readonly="true"		onClick="serialAction('disconnect')">Disconnect</button>
-				<button id="btn-connect" 	class="btn btn-sm btn-success" 	readonly="false"	onClick="serialAction('connect')">Connect</button>
-				<br />
-				<button class="btn btn-sm btn-info" 	onClick="serialAction('isConnected')">isConnected</button>
-				<button class="btn btn-sm btn-info" 	onClick="serialAction('checkConnection')">checkConnection</button>
-				<br />
-				<button class="btn btn-sm btn-light" 	onClick="serialAction('deviceInfo')">deviceInfo</button>
-				<button class="btn btn-sm btn-light" 	onClick="serialAction('listDevices')">listDevices</button>
-				
-				<button class="btn btn-sm btn-info" 	onClick="executeLua('print(node.heap())')">Heap</button>
+		<div class="row">
+			<div class="col">
+				<h5>ESPanel</h5>
 			</div>
-			<div>
-				<span class="colsm" id="return"></span>
-				
-				
+			<div class="col">
+				<input class="form-control form-control-sm" type="search" id="portUSB" list="listportUSB" placeholder="Serial port">
+				<datalist id="listportUSB">
+					<option value="COM1" />
+					<option value="COM2" />
+					<option value="COM3" />
+					<option value="COM4" />
+					<option value="COM5" />
+				</datalist>				
 			</div>
-			
+			<div class="col">
+				<input class="form-control form-control-sm" type="search" id="baudRate" list="listbaudRate" placeholder="Serial baudRate">
+				<datalist id="listbaudRate">
+					<option value="9600" />
+					<option value="38400" />
+					<option value="115200" />
+					<option value="921600" />
+				</datalist>			
+			</div>			
 		</div>
-		
+
+
+    <div class="row">
 		<div class="col-xl-8">
 			<div>
 				<span style="font:bold 1.2rem Verdana">Editon </span>
@@ -271,9 +302,31 @@ function downloadESP(file){
 			<div id="terminal"></div>
 			<span class="colsm" id="messages"></span>
 			<span class="colsm" id="info"></span>
-			<span class="colsm" id="startPage">startPage</span>
-			
+			<span class="colsm" id="startPage">startPage</span>	
 		</div>
+
+		<div class="col-xl-4">			
+			<button class="btn btn-primary" 		onClick="uploadESP()">UPLOAD <span id="luaname">aaa.lua</span></button>
+			<button class="btn btn-secondary" 		onClick="downloadESP()">Download <span id="luaname">aaa.lua</span></button>			
+			<div>
+				<button class="btn btn-danger" 	onClick="fsinfoESP()">LUA files</button>
+				<button class="btn btn-warning" 	onClick="resetESP()">Reset</button>
+				<hr />
+				<button id="btn-disconnect" class="btn btn-sm btn-danger" 	readonly="true"		onClick="serialAction('disconnect')">Disconnect</button>
+				<button id="btn-connect" 	class="btn btn-sm btn-success" 	readonly="false"	onClick="serialAction('connect')">Connect</button>
+				<br />
+				<button class="btn btn-sm btn-info" 	onClick="serialAction('isConnected')">isConnected</button>
+				<button class="btn btn-sm btn-info" 	onClick="serialAction('checkConnection')">checkConnection</button>
+				<br />
+				<button class="btn btn-sm btn-light" 	onClick="serialAction('deviceInfo')">deviceInfo</button>
+				<button class="btn btn-sm btn-light" 	onClick="serialAction('listDevices')">listDevices</button>				
+				<button class="btn btn-sm btn-info" 	onClick="executeLua('print(node.heap())')">Heap</button>
+			</div>
+			<div>
+				<span class="colsm" id="return"></span>
+			</div>
+		</div>
+		
 		
 		
 	</div>
