@@ -1,27 +1,26 @@
-var moduleDIR='../node_modules/';
-var express = require(moduleDIR+'express');
+var FUNCTIONS = require('./public/js/functions');
+var ad=FUNCTIONS.FUNKCJE.add(2,4)
+console.log(ad)
+
+
+
+var OPTIONS = require('./public/js/options');
+console.log(OPTIONS);
+		var zmienna		= OPTIONS.zmienna	|| 123; // test only ???
+		var portUSB 	= OPTIONS.portUSB	|| 'COM4';
+		var baudRate 	= OPTIONS.baudRate	|| 115200;
+		var PORT		= OPTIONS.PORT 		|| 3009;
+		var isCONN 		= false
+
+var moduleDIR  = OPTIONS.moduleDIR;
+var express    = require(moduleDIR+'express');
 var bodyParser = require(moduleDIR+'body-parser')
 var app = express();
 var http = require('http').Server(app);
-var io = require(moduleDIR+'socket.io')(http);
+var io   = require(moduleDIR+'socket.io')(http);
 var socketReady=false;
 
-			var OPTIONS = require('./public/js/options');
-			var FUNCTIONS = require('./public/js/functions');
-			/*
-			console.log(OPTIONS)
-			console.log(OPTIONS.portUSB)
-			console.log(OPTIONS.baudRate)
 			
-			console.log(FUNCTIONS)
-			console.log(FUNCTIONS.Calc.add)
-			var ad=FUNCTIONS.Calc.add(2,4)
-			console.log(ad)
-			*/
-			var portUSB 	= OPTIONS.portUSB;
-			var baudRate 	= OPTIONS.baudRate;
-			var isCONN 		= false
-
 app.use(express.static(__dirname+'/public/'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}))
@@ -30,7 +29,6 @@ app.use(bodyParser.urlencoded({extended: false}))
 var con = require(moduleDIR+'nodemcu-tool/lib/nodemcu-connector.js');
 
 con.onError(function(err){console.log('con.onError=',err);})
-
 
 	
 let progress=function(p){
@@ -48,6 +46,7 @@ function resetESP(){
 		}).catch(function(e){console.log('e=',e);})	
 }
 	
+
 function serialAction(action){
 	console.log('serialAction=',action)
 
@@ -130,6 +129,7 @@ function startPAGE(){
 
 	
 }
+
 
 /*qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq*/
 
@@ -234,10 +234,34 @@ setInterval(function(){
 },10000)
 
 
+app.post('/restart', async (req, res) => {
+     io.emit('message', 'restart node js');
+     res.sendStatus(200);
+	 restart()
+});
 
 
-var server = http.listen(3009, () => {
+function restart(){
+	console.log("This is pid " + process.pid);
+	setTimeout(function () {
+		process.on("exit", function () {
+			require("child_process").spawn(process.argv.shift(), process.argv, {
+				cwd: process.cwd(),
+				detached : true,
+				stdio: "inherit"
+			});
+		});
+		process.exit();
+	}, 1500);
+}
+
+
+
+var server = http.listen(PORT, () => {
   console.log('server is running on port', server.address().port);
+  serialAction('disconnect');
+  serialAction('listDevices');
+  
 });
 
 

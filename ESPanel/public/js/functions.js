@@ -2,7 +2,7 @@
 (function(){
     "use strict";
 
-    this.Calc = function () {
+    this.FUNKCJE = function () {
         return Object.freeze({
             add: function(x, y) { return x + y; },
             div: function(x, y) { return x / y; },

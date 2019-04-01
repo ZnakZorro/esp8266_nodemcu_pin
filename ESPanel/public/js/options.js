@@ -1,5 +1,8 @@
 (function(){
-    "use strict";
-	this.portUSB 	= 'COM4';
-	this.baudRate 	= 115200;
+    "use strict";	
+	this.moduleDIR	= '../../node_modules/';
+	this.PORT		= 3010;
+	this.SERVER		= 'http://localhost';
+	this.portUSB	= 'COM3';
+	this.baudRate	= 115200;
 }).call(this);
