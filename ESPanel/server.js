@@ -11,10 +11,11 @@ console.log(OPTIONS);
 		var baudRate 	= OPTIONS.baudRate	|| 115200;
 		var PORT		= OPTIONS.PORT 		|| 3009;
 		var isCONN 		= false
-
-var moduleDIR  = OPTIONS.moduleDIR;
-var express    = require(moduleDIR+'express');
-var bodyParser = require(moduleDIR+'body-parser')
+var exec 		= require('child_process').exec;
+var spawn 		= require('child_process').spawn;
+var moduleDIR	= OPTIONS.moduleDIR;
+var express		= require(moduleDIR+'express');
+var bodyParser	= require(moduleDIR+'body-parser')
 var app = express();
 var http = require('http').Server(app);
 var io   = require(moduleDIR+'socket.io')(http);
@@ -47,8 +48,8 @@ function resetESP(){
 }
 	
 
-function serialAction(action){
-	console.log('serialAction=',action)
+function serialAction(action,value){
+	console.log('ssssssssssssssserialAction=',action)
 
 	if (action=='isConnected') 		{let v=con.isConnected(); 		IOslij('info',v);	console.log(v);}
 	if (action=='checkConnection')	{con.checkConnection().then(function(v){IOslij('info',v);console.log(v);})}
@@ -58,6 +59,10 @@ function serialAction(action){
 
 	if (action=='deviceInfo') 		{con.deviceInfo().then(function(v){IOslij('info',v);console.log(v);})}
 	if (action=='listDevices') 		{con.listDevices().then(function(v){IOslij('info',v);console.log(v);})}
+	if (action=='option'){
+		value=JSON.parse(value);
+		console.log(typeof(value),'.............OPTION=',value);
+	} 
 
 }
 
@@ -95,7 +100,7 @@ function fsinfo(val){
 }
 
 function uploadESP(file){
-	console.log('#84 uploadESP=')
+	console.log('#102 uploadESP=',file)
 	con.upload(file,file,{"minify":null},progress)
 		.then(function(ret){
 			console.log('upload ret=',ret)
@@ -169,7 +174,7 @@ app.get('/messages/:user', (req, res) => {
 app.post('/messages', async (req, res) => {
   try{
     let message = (req.body);
-	console.log('mmm=',message)
+	console.log('mmmmmmm=',message)
 	let name  = message.name || null;
 	let mess  = message.message || null;
 	let value = message.value || null;	
@@ -178,7 +183,7 @@ app.post('/messages', async (req, res) => {
 	console.log('value=',value)
 	if (name==='test'){test(mess,value);}
 	if (name==='serial'){
-			serialAction(mess);
+			serialAction(mess,value);
 		//if (mess==='checkConnection') checkSerial();
 		//if (mess==='connect') checkSerial();
 		//if (mess==='disconnect') checkSerial(); 
@@ -235,13 +240,33 @@ setInterval(function(){
 
 
 app.post('/restart', async (req, res) => {
-     io.emit('message', 'restart node js');
+	console.log('#243 /restart')
+     //io.emit('message', 'restart node js');
      res.sendStatus(200);
-	 restart()
+	 exec('taskkill /F /IM node.exe && node server.js');
+	 //restart()
+});
+
+app.post('/kill', async (req, res) => {
+	console.log('#250 /kill')
+     io.emit('message', 'kill node js');
+     res.sendStatus(200);
+	 exec('taskkill /F /IM node.exe')
+	 //kill()
 });
 
 
+function kill(){
+	console.log('kill()')
+	exec('taskkill /F /IM node.exe')
+	//exec('kill.bat',function(a,b,c){console.log(a,b,c);});
+}
+
 function restart(){
+	console.log('restart()')
+	exec('taskkill /F /IM node.exe & "C:\nodejs\node.exe" "C:\nodejs\nodemcu\mcu\server.js"');
+	//exec('restart.bat');
+	/*
 	console.log("This is pid " + process.pid);
 	setTimeout(function () {
 		process.on("exit", function () {
@@ -253,6 +278,7 @@ function restart(){
 		});
 		process.exit();
 	}, 1500);
+	*/
 }
 
 
