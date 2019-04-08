@@ -73,6 +73,7 @@ int licznik1 =0;
 int licznik2 =0;
 int kierunek1=1;
 int kierunek2=1;
+int krok=1;
 int gain=1;
 
 long fm_intensity; // carries control info from updateControl to updateAudio
@@ -94,7 +95,7 @@ void setup(){
 
 void updateControl(){
   licznik1 +=kierunek1;
-  licznik2 +=kierunek2*2;
+  licznik2 +=kierunek2*krok;
   if (licznik1>100 || licznik1<1) kierunek1*=-1;
   if (licznik2>100 || licznik2<1) kierunek2*=-1;
   
@@ -132,7 +133,7 @@ void updateControl(){
 
   // read the light dependent resistor on the speed Analog input pin
   int LDR2_value= (int) mozziAnalogRead(LDR2_PIN)*10/7; // value is 0-1023
-  if (LDR2_value<2) 
+  krok = LDR1_value >> 4;
   Serial.print("LDR2 = ");
   Serial.print(LDR2_value);
   Serial.print("\t");
