@@ -76,6 +76,7 @@ int kierunek2=1;
 int krok1=1;
 int krok2=3;
 int gain=1;
+float flaga = 10/7;
 
 long fm_intensity; // carries control info from updateControl to updateAudio
 
@@ -89,7 +90,7 @@ void setup(){
   //analogReference(EXTERNAL);
   //Serial.begin(9600);
   Serial.begin(115200);
-  Serial.print("Leo_Fono_v1");
+  Serial.print("Leo_Fono_v2");
   startMozzi(); // :))
 }
 
@@ -101,7 +102,7 @@ void updateControl(){
   if (licznik2>100 || licznik2<1) kierunek2*=-1;
   
   // read the knob
-  int knob_value = mozziAnalogRead(KNOB_PIN)*10/7; // value is 0-1023
+  int knob_value = mozziAnalogRead(KNOB_PIN)*flaga; // value is 0-1023
   //Serial.println(knob_value);
   // map the knob to carrier frequency
   int carrier_freq = kMapCarrierFreq(knob_value)+licznik1;
@@ -115,7 +116,7 @@ void updateControl(){
   aModulator2.setFreq(mod_freq<<1);
 
   // read the light dependent resistor on the width Analog input pin
-  int LDR1_value= mozziAnalogRead(LDR1_PIN)*10/7; // value is 0-1023
+  int LDR1_value= mozziAnalogRead(LDR1_PIN);//*10/7; // value is 0-1023
   // print the value to the Serial monitor for debugging
   Serial.print("LDR1 = ");
   Serial.print(LDR1_value);
@@ -133,20 +134,23 @@ void updateControl(){
   Serial.print("\t"); // prints a tab
 
   // read the light dependent resistor on the speed Analog input pin
-  int LDR2_value= (int) mozziAnalogRead(LDR2_PIN)*10/7; // value is 0-1023
-  krok1 = LDR1_value >> 5;
-  krok2 = LDR2_value >> 5;
+  int LDR2_value= (int) mozziAnalogRead(LDR2_PIN)*flaga; // value is 0-1023
+        //krok1 = 1+(knob_value /16);
+        //krok1 = 2+(LDR1_value /64);        
+        //krok2 = 1+(LDR2_value /64);
   Serial.print("LDR2 = ");
   Serial.print(LDR2_value);
   Serial.print("\t");
 
   // use a float here for low frequencies
   float mod_speed = (float)kMapModSpeed(LDR2_value)/1000;
-                if (LDR2_value<2) gain =0; else gain=1;
+  //float mod_speed = (float)(1023-LDR2_value)/1000;
+                
+                if (knob_value<3 || LDR1_value<3 || LDR2_value<3) gain =0; else gain=1;
   
-  Serial.print("   mod_speed = ");
+  Serial.print("mod_speed=");
   Serial.print(mod_speed);
-  Serial.print("\t");
+  Serial.print("\tG=");
   Serial.print(gain);
   kIntensityMod.setFreq(mod_speed);
 
@@ -156,9 +160,9 @@ void updateControl(){
 
 int updateAudio(){
   //long modulation = aSmoothIntensity.next(fm_intensity) * (aModulator.next();
-  long modulation = aSmoothIntensity.next(fm_intensity) * (aModulator.next()) + (aModulator2.next()+aModulator2.next()>>1);
-  modulation *=gain; 
-  return aCarrier.phMod(modulation);
+  long modulation = (aSmoothIntensity.next(fm_intensity)>>2) * ((aModulator.next()>>2) * (aModulator2.next()>>4));
+  //long modulation = ((aSmoothIntensity.next(fm_intensity))) + (((aModulator.next()) + (aModulator2.next()))>>2);
+  return gain * aCarrier.phMod(modulation);
 }
 
 
