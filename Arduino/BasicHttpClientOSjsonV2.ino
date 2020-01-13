@@ -21,7 +21,7 @@ String txt="";
 char   buftt[16];
 String tt="";
 byte bajt = 0;
-StaticJsonDocument<200> doc;
+StaticJsonDocument<250> doc;
 ESP8266WiFiMulti WiFiMulti;
 
 void setup() {
@@ -30,7 +30,7 @@ void setup() {
   Serial.begin(115200);
   // Serial.setDebugOutput(true);
 
-  for (uint8_t t = 4; t > 0; t--) {
+  for (uint8_t t = 5; t > 0; t--) {
     Serial.printf("[SETUP] WAIT %d...\n", t);
     t1 = "WiFi:";
     t1.concat(t);
@@ -39,9 +39,21 @@ void setup() {
     delay(1000);
   }
   WiFi.mode(WIFI_STA);
-    //const char* ssid     = "webWI";
-    //const char* password = "wi77tam77";   
-  WiFiMulti.addAP("webWI", "wi77tam77");
+  
+            WiFiMulti.addAP("webWI", "wi77tam77");
+            Serial.println();
+            Serial.println();
+            Serial.print("Wait for WiFi... ");
+            while (WiFiMulti.run() != WL_CONNECTED)
+            {
+              Serial.print("*");
+              delay(500);
+            }
+            Serial.println("");
+            Serial.println("WiFi connected");
+            Serial.println("IP address: ");
+            Serial.println(WiFi.localIP());
+            delay(500);
 }
 
 void printOLED(String txt) {
@@ -94,7 +106,7 @@ void olejOLED(){
                txt="t"+t+" d"+d;
             }
             if (moda==2) {
-               linijka="----  ";
+               linijka="---   ";
                symbolIcon = s3;
                String t  = doc["t3"];  if(t=="null") {t="?";}
                String d  = doc["d3"];  if(d=="null") {d="?";}
@@ -112,16 +124,16 @@ void olejOLED(){
             //Serial.print("txtLong=");Serial.println(txtLong);
 
             /*Wybór fontu zaleznie od dlugosci*/
-            //if (txtLong>5) {u8g2.setFont(u8g2_font_profont22_mr);} // 10,11,12,15,17,22,29 //_mr=krotki  _mf=pelny _tr=skrocony _mn=numery
-            //else {u8g2.setFont(u8g2_font_profont29_mr);}
+            if (txtLong>5) {u8g2.setFont(u8g2_font_profont22_mr);} // 10,11,12,15,17,22,29 //_mr=krotki  _mf=pelny _tr=skrocony _mn=numery
+            else {u8g2.setFont(u8g2_font_profont29_mr);}
 
             /*Wybór fontu zaleznie od dlugosci*/
-            if (txtLong>5) {u8g2.setFont(u8g2_font_logisoso18_tr);} // 16,18,22,24,26,28 // _mr=krotki _mf=pelny _tr=skrocony _mn=numery
-            else {u8g2.setFont(u8g2_font_logisoso24_tr);}
+            //if (txtLong>5) {u8g2.setFont(u8g2_font_logisoso18_tr);} // 16,18,22,24,26,28 // _mr=krotki _mf=pelny _tr=skrocony _mn=numery
+            //else {u8g2.setFont(u8g2_font_logisoso24_tr);}
 
             // print linijka
             linijka.toCharArray(buftt, 16);
-            u8g2.drawStr(0,8 ,buftt);
+            u8g2.drawStr(0,10 ,buftt);
 
             // print buff with data
             txt.toCharArray(buftt, 16);
