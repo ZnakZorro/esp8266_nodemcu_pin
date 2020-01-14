@@ -73,7 +73,7 @@ void printOLED(String txt) {
   } while (u8g2.nextPage());   
 }
 
-void parseJson(int nr){
+void parseJsonSingle(int nr){
     if (nr==1){ 
       unsigned int xLength = linia1.length(); 
       if (xLength>0) { return;}
@@ -120,21 +120,16 @@ void parseJson(int nr){
     }
 }
 
+void parseJson(){
+    parseJsonSingle(1);
+    parseJsonSingle(2);
+    parseJsonSingle(3);
+    parseJsonSingle(4); 
+}
+
 void olejOLED(){
-    parseJson(1);
-    parseJson(2);
-    parseJson(3);
-    parseJson(4);
+ 
     Serial.print("1 linia1.length=");  Serial.println(linia1.length()); Serial.println(linia1);
-        
-    //String s1 = doc["s1"]; if(s1=="null") {s1="B";}
-    //String s2 = doc["s2"]; if(s2=="null") {s2="D";}
-    //String s3 = doc["s3"]; if(s3=="null") {s3="E";}
-    //String s4 = doc["s4"]; if(s4=="null") {s4="D";}
-    //linie[0] = String s1;
-    //printOLED(String linie[0]);
-    //Serial.println(linie[0]);
-    //Serial.print(s1); Serial.print("; ");    Serial.print(s2); Serial.print("; "); 
 
         byte moda = bajt % 4;
         bajt++;
@@ -148,33 +143,21 @@ void olejOLED(){
             if (moda==0) {
                linijka="-     ";
                symbolIcon = symbol1;
-               //String t  = doc["t1"];  if(t=="null") {t="?";}
-               //String d  = doc["d1"];  if(d=="null") {d="?";}
-               //txt="t"+t+" d"+d;
                txt = linia1;
             }           
             if (moda==1) {
                linijka="--    ";
                symbolIcon = symbol2;
-               //String t  = doc["t2"];  if(t=="null") {t="?";}
-               //String d  = doc["d2"];  if(d=="null") {d="?";}
-               //txt="t"+t+" d"+d;
                txt = linia2;
             }
             if (moda==2) {
                linijka="---   ";
                symbolIcon = symbol3;
-               //String t  = doc["t3"];  if(t=="null") {t="?";}
-               //String d  = doc["d3"];  if(d=="null") {d="?";}
-               //txt="t"+t+" d"+d;
                txt = linia3;
             }
             if (moda==3) {
                linijka="------";
                symbolIcon = symbol4;
-               //String t  = doc["t4"];  if(t=="null") {t="?";}
-               //String d  = doc["d4"];  if(d=="null") {d="?";}
-               //txt="t"+t+" d"+d;
                txt = linia4;
             }
             
@@ -233,6 +216,7 @@ void server() {
                 if (error) {
                   Serial.println(error.c_str());
                 } else {
+                   parseJson();
                    olejOLED();
                 }
             }
